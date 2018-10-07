@@ -27,16 +27,19 @@ The file profile.name contains the name of an AWS profile. It is assumed that th
 Metrics were measured by inspecting CloudWatch Logs after the integration tests had been run three times in a row.
 
 | Invocation | Language | Duration  | Memory Used | Size     |
+| ---------- | -------- | --------- | ----------- | -------- |
 | 1          | Node     | 58.69ms   | 19MB        | 346bytes |
 | 2          | Node     | 0.58ms    | 19MB        | 346bytes |
 | 3          | Node     | 0.48ms    | 19MB        | 346bytes |
 
 | Invocation | Language | Duration  | Memory Used | Size     |
+| ---------- | -------- | --------- | ----------- | -------- |
 | 1          | Python   | 11.70ms   | 21MB        | 396bytes |
 | 2          | Python   | 0.65ms    | 21MB        | 396bytes |
 | 3          | Python   | 0.59ms    | 21MB        | 396bytes |
 
 | Invocation | Language | Duration  | Memory Used | Size     |
+| ---------- | -------- | --------- | ----------- | -------- |
 | 1          | Java     | 7037.13ms | 53MB        | 10MB     |
 | 2          | Java     | 170.63ms  | 54MB        | 10MB     |
 | 3          | Java     | 133.24ms  | 54MB        | 10MB     |
