@@ -62,6 +62,14 @@ public class HelloSteps {
         con.setDoOutput(true);
     }
 
+    @Given("^I have a quote lambda function$")
+    public void i_have_a_quote_lambda_function() throws Throwable {
+        url = new URL(urlPrefix + "/hello/quote");
+        con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("POST");
+        con.setDoOutput(true);
+    }
+
     @When("^I send (.*)$")
     public void i_send(String who) throws Throwable {
         ObjectMapper mapper = new ObjectMapper();

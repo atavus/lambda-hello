@@ -1,5 +1,7 @@
 import boto3, sys, subprocess, time
 
+version = '1.0.0'
+
 def validate_template(profile,stack):
     template = open('src/main/cloudformation/{0}.yaml'.format(stack)).read()
     session = boto3.Session(profile_name=profile)
@@ -13,13 +15,13 @@ def build_java_lambda():
     subprocess.call(["mvn","clean","package"])
     
 def build_python_lambda():
-    p = subprocess.Popen(["zip","-r9","../../../target/lambda-hello-1.0.0.py.zip","."],cwd='src/main/python')
+    p = subprocess.Popen(["zip","-r9","../../../target/lambda-hello.py.zip","."],cwd='src/main/python')
     rc = p.wait()
     if rc != 0:
         sys.exit(0)
         
 def build_node_lambda():
-    p = subprocess.Popen(["zip","-r9","../../../target/lambda-hello-1.0.0.js.zip","."],cwd='src/main/node')
+    p = subprocess.Popen(["zip","-r9","../../../target/lambda-hello.js.zip","."],cwd='src/main/node')
     rc = p.wait()
     if rc != 0:
         sys.exit(0)
@@ -27,17 +29,17 @@ def build_node_lambda():
 def s3_copy_java_file(profile):
     session = boto3.Session(profile_name=profile)
     client = session.client('s3')
-    client.upload_file('./target/lambda-hello-1.0.0-SNAPSHOT.jar', bucket, 'java/hello-lambda-1.0.0.jar')    
+    client.upload_file('./target/lambda-hello-1.0.0-SNAPSHOT.jar', bucket, 'java/hello-lambda-{0}.jar'.format(version))    
 
 def s3_copy_python_file(profile):
     session = boto3.Session(profile_name=profile)
     client = session.client('s3')
-    client.upload_file('./target/lambda-hello-1.0.0.py.zip', bucket, 'python/hello-lambda-1.0.0.zip')    
+    client.upload_file('./target/lambda-hello.py.zip', bucket, 'python/hello-lambda-{0}.zip'.format(version))    
 
 def s3_copy_node_file(profile):
     session = boto3.Session(profile_name=profile)
     client = session.client('s3')
-    client.upload_file('./target/lambda-hello-1.0.0.js.zip', bucket, 'node/hello-lambda-1.0.0.zip')
+    client.upload_file('./target/lambda-hello.js.zip', bucket, 'node/hello-lambda-{0}.zip'.format(version))
     
 def apply_stack(profile,stack,bucket):
     session = boto3.Session(profile_name=profile)

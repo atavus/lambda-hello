@@ -4,7 +4,7 @@ set -feuo pipefail
 
 bucket="cf-store-software"
 account="software"
-stack="hello"
+stack="lambda-hello"
 mode="UPDATE"
 
 echo check the stack status

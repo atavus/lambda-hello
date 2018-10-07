@@ -33,4 +33,13 @@ Scenario Outline: Check Node lambda function
   Examples:
   | who   | result     |
   | joe   | Hello joe! |
-  
+
+Scenario Outline: Check Quote lambda function
+	Given I have a quote lambda function
+	When I send <who>
+	Then the result should be <result>
+	
+	Examples:
+	| who | result                                            |
+	| joe | Hello joe! Here is a quote: Lambda is quite good. |  
+	

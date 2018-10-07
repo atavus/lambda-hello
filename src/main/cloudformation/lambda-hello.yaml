@@ -9,6 +9,18 @@ Parameters:
   BucketName:
     Description: The name of the bucket to store the lambda code in 
     Type: String
+  JavaS3Key:
+    Description: Location of the java code zip file
+    Type: String
+    Default: java/hello-lambda-1.0.0.jar
+  NodeS3Key:
+    Description: Location of the node code zip file
+    Type: String
+    Default: node/hello-lambda-1.0.0.zip
+  PythonS3Key:
+    Description: Location of the python code zip file
+    Type: String
+    Default: python/hello-lambda-1.0.0.zip
 
 Resources:
 
@@ -199,6 +211,64 @@ Resources:
                   application/json: "{\"statusCode\": 200}"
                 passthroughBehavior: "when_no_match"
                 type: "mock"
+          /hello/quote:
+            post:
+              description: Perform quote with python
+              consumes:
+                - application/json
+              produces:
+                - application/json
+              security:
+                - CognitoAuthorizer: []
+              responses:
+                "201":
+                  description: "201 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 201
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                uri:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !GetAtt QuoteApiLambda.Arn
+                      - "/invocations"
+                passthroughBehaviour: "when_no_match"
+                httpMethod: "POST"
+                contentHandling: "CONVERT_TO_TEXT"
+                type: "aws_proxy"
+            options:
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{\"statusCode\": 200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
 
   HelloApiDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -245,6 +315,23 @@ Resources:
             - !Ref HelloAPI
             - "/*"
 
+  QuoteApiLambdaPermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref QuoteApiLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          - - "arn:aws:execute-api:"
+            - !Ref AWS::Region
+            - ":"
+            - !Ref AWS::AccountId
+            - ":"
+            - !Ref HelloAPI
+            - "/*"
+
   HelloNodeLambdaPermissions:
     Type: AWS::Lambda::Permission
     Properties:
@@ -271,21 +358,8 @@ Resources:
       Role: !GetAtt HelloLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Ref BucketName
-        S3Key: java/hello-lambda-1.0.0.jar
+        S3Key: !Ref JavaS3Key
       Runtime: java8
-      Timeout: 10
-
-  HelloPythonLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: HelloPythonLambda
-      Description: Web API to say Hello from Python
-      Handler: lambda.handleRequest
-      Role: !GetAtt HelloLambdaExecutionRole.Arn
-      Code:
-        S3Bucket: !Ref BucketName
-        S3Key: python/hello-lambda-1.0.0.zip
-      Runtime: python3.6
       Timeout: 10
 
   HelloNodeLambda:
@@ -297,9 +371,89 @@ Resources:
       Role: !GetAtt HelloLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Ref BucketName
-        S3Key: node/hello-lambda-1.0.0.zip
+        S3Key: !Ref NodeS3Key
       Runtime: nodejs6.10
       Timeout: 10
+
+  HelloPythonLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: HelloPythonLambda
+      Description: Web API to say Hello from Python
+      Handler: lambda.handleRequest
+      Role: !GetAtt HelloLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref BucketName
+        S3Key: !Ref PythonS3Key
+      Runtime: python3.6
+      Timeout: 10
+
+  QuoteApiLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: QuoteApiLambda
+      Description: API Gateway invoked Lambda to call the QuoteServiceLambda
+      Handler: quote-api.handleRequest
+      Role: !GetAtt QuoteApiLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref BucketName
+        S3Key: !Ref PythonS3Key
+      Runtime: python3.6
+      Timeout: 10
+
+  QuoteServiceLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: QuoteServiceLambda
+      Description: Lambda to return a quote to the caller
+      Handler: quote-service.handleRequest
+      Role: !GetAtt QuoteServiceLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref BucketName
+        S3Key: !Ref PythonS3Key
+      Runtime: python3.6
+      Timeout: 10
+
+  QuoteServiceLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: 
+            Service: lambda.amazonaws.com
+          Action: 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaRole
+
+  QuoteApiLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: 
+            Service: lambda.amazonaws.com
+          Action: 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaRole
+      Policies:
+      - PolicyName: LambdaPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Sid: LambdaInvocation
+              Effect: Allow
+              Action:
+                - 'lambda:InvokeFunction'
+              Resource:
+                - !GetAtt QuoteServiceLambda.Arn
 
   HelloLambdaExecutionRole:
     Type: AWS::IAM::Role
