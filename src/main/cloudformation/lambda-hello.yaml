@@ -1,0 +1,322 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Deploy the hello java example V1.1
+
+Parameters:
+  StageName:
+    Description: The name of the stage to deploy to
+    Type: String
+    Default: prod
+  BucketName:
+    Description: The name of the bucket to store the lambda code in 
+    Type: String
+
+Resources:
+
+  HelloAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: HelloAPI
+      Description: Hello API
+      Parameters:
+        endpointConfigurationTypes: EDGE
+      Body:
+        swagger: 2.0
+        info: 
+          version: 1.0.0
+          title: Hello
+        paths:
+          /hello/java:
+            post:
+              description: Perform hello with java
+              consumes:
+                - application/json
+              produces:
+                - application/json
+              security:
+                - CognitoAuthorizer: []
+              responses:
+                "201":
+                  description: "201 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 201
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                uri:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !GetAtt HelloJavaLambda.Arn
+                      - "/invocations"
+                passthroughBehaviour: "when_no_match"
+                httpMethod: "POST"
+                contentHandling: "CONVERT_TO_TEXT"
+                type: "aws_proxy"
+            options:
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{\"statusCode\": 200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /hello/python:
+            post:
+              description: Perform hello with python
+              consumes:
+                - application/json
+              produces:
+                - application/json
+              security:
+                - CognitoAuthorizer: []
+              responses:
+                "201":
+                  description: "201 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 201
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                uri:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !GetAtt HelloPythonLambda.Arn
+                      - "/invocations"
+                passthroughBehaviour: "when_no_match"
+                httpMethod: "POST"
+                contentHandling: "CONVERT_TO_TEXT"
+                type: "aws_proxy"
+            options:
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{\"statusCode\": 200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /hello/node:
+            post:
+              description: Perform hello with node
+              consumes:
+                - application/json
+              produces:
+                - application/json
+              security:
+                - CognitoAuthorizer: []
+              responses:
+                "201":
+                  description: "201 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 201
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                uri:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !GetAtt HelloNodeLambda.Arn
+                      - "/invocations"
+                passthroughBehaviour: "when_no_match"
+                httpMethod: "POST"
+                contentHandling: "CONVERT_TO_TEXT"
+                type: "aws_proxy"
+            options:
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{\"statusCode\": 200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+
+  HelloApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      Description: Deployment for hello API
+      RestApiId: !Ref HelloAPI
+      StageName: !Ref StageName
+      StageDescription:
+        DataTraceEnabled: false
+        LoggingLevel: ERROR
+        MetricsEnabled: false    
+
+  HelloJavaLambdaPermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref HelloJavaLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          - - "arn:aws:execute-api:"
+            - !Ref AWS::Region
+            - ":"
+            - !Ref AWS::AccountId
+            - ":"
+            - !Ref HelloAPI
+            - "/*"
+
+  HelloPythonLambdaPermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref HelloPythonLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          - - "arn:aws:execute-api:"
+            - !Ref AWS::Region
+            - ":"
+            - !Ref AWS::AccountId
+            - ":"
+            - !Ref HelloAPI
+            - "/*"
+
+  HelloNodeLambdaPermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref HelloNodeLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          - - "arn:aws:execute-api:"
+            - !Ref AWS::Region
+            - ":"
+            - !Ref AWS::AccountId
+            - ":"
+            - !Ref HelloAPI
+            - "/*"
+   
+  HelloJavaLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: HelloJavaLambda
+      Description: Web API to say Hello from Java
+      Handler: org.atavus.demo.aws.lambda.Lambda::handleRequest
+      Role: !GetAtt HelloLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref BucketName
+        S3Key: java/hello-lambda-1.0.0.jar
+      Runtime: java8
+      Timeout: 10
+
+  HelloPythonLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: HelloPythonLambda
+      Description: Web API to say Hello from Python
+      Handler: lambda.handleRequest
+      Role: !GetAtt HelloLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref BucketName
+        S3Key: python/hello-lambda-1.0.0.zip
+      Runtime: python3.6
+      Timeout: 10
+
+  HelloNodeLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: HelloNodeLambda
+      Description: Web API to say Hello from Node
+      Handler: lambda.handleRequest
+      Role: !GetAtt HelloLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref BucketName
+        S3Key: node/hello-lambda-1.0.0.zip
+      Runtime: nodejs6.10
+      Timeout: 10
+
+  HelloLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: 
+            Service: lambda.amazonaws.com
+          Action: 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaRole
+
+Outputs:      
+  APIURL:
+    Description: The URL for the API gateway
+    Value: !Join [ "" , [ "https://" , !Ref HelloAPI , ".execute-api." , !Ref "AWS::Region" , ".amazonaws.com/" , !Ref StageName ] ]
